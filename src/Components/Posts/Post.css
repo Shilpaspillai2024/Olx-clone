@@ -25,21 +25,25 @@
   display: flex;
 }
 
+
 .moreView .cards {
-  white-space: nowrap;
-  overflow-x: scroll;
-  overflow-y: hidden;
+  display: flex;
+  flex-wrap: wrap; 
+  gap: 16px; 
+  justify-content:space-between 
 }
 
 .card {
-  margin-right: 15px;
+  flex: 1 1 calc(25% - 16px); 
+  max-width: 222px; 
   padding: 13px;
-  max-width: 222px;
-  width: 222px;
   height: 270px;
-  display: inline-block;
+  display: flex;
+  flex-direction: column; 
   cursor: pointer;
+  box-sizing: border-box; 
 }
+
 
 .card .favorite {
   display: flex;

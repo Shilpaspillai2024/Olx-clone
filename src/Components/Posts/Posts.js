@@ -1,11 +1,42 @@
-import React from 'react';
-
-import Heart from '../../assets/Heart';
-import './Post.css';
+import React, { useContext, useEffect, useState } from "react";
+import Heart from "../../assets/Heart";
+import "./Post.css";
+import { FirebaseContext } from "../../store/FirebaseContext";
+import { PostContext } from "../../store/PostContext";
+import { useHistory } from "react-router-dom";
+import { LoadingContext } from "../../store/LoadingContext";
+import Loading from "../Loading/Loading";
 
 function Posts() {
+  const loading = useContext(LoadingContext);
+  const { firebase } = useContext(FirebaseContext);
+  const [products, setProducts] = useState([]);
+  const { setPostDetails } = useContext(PostContext);
+  const history = useHistory();
 
-  return (
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        loading?.setLoading(true);
+        const snapshot = await firebase.firestore().collection("products").get();
+        const allPost = snapshot.docs.map((product) => ({
+          ...product.data(),
+          id: product.id,
+        }));
+        setProducts(allPost);
+      } catch (error) {
+        console.error("Error fetching products: ", error);
+      } finally {
+        loading?.setLoading(false);  
+      }
+    };
+
+    fetchProducts();
+  }, [firebase]);
+
+  return loading?.loading ? (
+    <Loading />
+  ) : (
     <div className="postParentDiv">
       <div className="moreView">
         <div className="heading">
@@ -13,47 +44,35 @@ function Posts() {
           <span>View more</span>
         </div>
         <div className="cards">
-          <div
-            className="card"
-          >
-            <div className="favorite">
-              <Heart></Heart>
-            </div>
-            <div className="image">
-              <img src="../../../Images/R15V3.jpg" alt="" />
-            </div>
-            <div className="content">
-              <p className="rate">&#x20B9; 250000</p>
-              <span className="kilometer">Two Wheeler</span>
-              <p className="name"> YAMAHA R15V3</p>
-            </div>
-            <div className="date">
-              <span>Tue May 04 2021</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="recommendations">
-        <div className="heading">
-          <span>Fresh recommendations</span>
-        </div>
-        <div className="cards">
-          <div className="card">
-            <div className="favorite">
-              <Heart></Heart>
-            </div>
-            <div className="image">
-              <img src="../../../Images/R15V3.jpg" alt="" />
-            </div>
-            <div className="content">
-              <p className="rate">&#x20B9; 250000</p>
-              <span className="kilometer">Two Wheeler</span>
-              <p className="name"> YAMAHA R15V3</p>
-            </div>
-            <div className="date">
-              <span>10/5/2021</span>
-            </div>
-          </div>
+          {products.length > 0 ? (
+            products.map((product) => (
+              <div
+                className="card"
+                onClick={() => {
+                  setPostDetails(product);
+                  history.push("/view");
+                }}
+                key={product.id}
+              >
+                <div className="favorite">
+                  <Heart />
+                </div>
+                <div className="image">
+                  <img src={product.url} alt="" />
+                </div>
+                <div className="content">
+                  <p className="rate">&#x20B9; {product.price}</p>
+                  <span className="kilometer">{product.category}</span>
+                  <p className="name">{product.name}</p>
+                </div>
+                <div className="date">
+                  <span>{product.createdAt}</span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No products available</p>
+          )}
         </div>
       </div>
     </div>
